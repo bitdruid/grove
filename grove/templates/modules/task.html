@@ -44,7 +44,7 @@
                                                 </tr>
                                                 <tr>
                                                     <td>
-                                                        <div class="form-check">
+                                                        <div class="form-check mb-1">
                                                             <input class="form-check-input" type="radio" name="task_source" value="index" id="task_radio_source_index" checked>
                                                             <label class="form-check-label" for="task_radio_source_index" data-bs-toggle="tooltip" data-bs-placement="top" title="Only the index-page">
                                                                 index
@@ -58,17 +58,23 @@
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="radio" name="task_archive" value="latest" id="task_radio_archive_latest" checked>
-                                                            <label class="form-check-label" for="task_radio_archive_latest" data-bs-toggle="tooltip" data-bs-placement="top" title="Latest version of all available files">
-                                                                latest
-                                                            </label>
+                                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                                            <div class="form-check mb-0" style="min-width: 4.5rem">
+                                                                <input class="form-check-input" type="radio" name="task_archive" value="latest" id="task_radio_archive_latest" checked>
+                                                                <label class="form-check-label" for="task_radio_archive_latest" data-bs-toggle="tooltip" data-bs-placement="top" title="Latest version of each file, optionally narrowed to a date range">
+                                                                    latest
+                                                                </label>
+                                                            </div>
+                                                            <input type="text" class="form-control form-control-sm datepicker-input" style="max-width: 5rem" name="task_archive_start" id="task_archive_start" placeholder="date" autocomplete="off">from
                                                         </div>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="radio" name="task_archive" value="2y" id="task_radio_archive_2y">
-                                                            <label class="form-check-label" for="task_radio_archive_2y" data-bs-toggle="tooltip" data-bs-placement="top" title="Snapshots of the last 2 years">
-                                                                2-year
-                                                            </label>
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <div class="form-check mb-0" style="min-width: 4.5rem">
+                                                                <input class="form-check-input" type="radio" name="task_archive" value="all" id="task_radio_archive_all">
+                                                                <label class="form-check-label" for="task_radio_archive_all" data-bs-toggle="tooltip" data-bs-placement="top" title="Every snapshot within the date range">
+                                                                    all
+                                                                </label>
+                                                            </div>
+                                                            <input type="text" class="form-control form-control-sm datepicker-input" style="max-width: 5rem" name="task_archive_end" id="task_archive_end" placeholder="date" autocomplete="off">to
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -226,5 +232,46 @@
                     updateRadios();
                     switchEl.addEventListener("change", updateRadios);
                 });
+
+                // archive date range: in-house month/year picker (datepicker.js — matches what
+                // the CDX query filter actually uses). Required (and defaulted) for "all",
+                // optional for "latest", disabled entirely when the Wayback Machine switch is
+                // off. Each end constrains the other via a live read of the other field's value
+                // (no cross-instance mutation, so there's nothing to fall out of sync).
+                const archiveSwitch = document.getElementById("task_switch_archive");
+                const archiveAll = document.getElementById("task_radio_archive_all");
+                const archiveLatest = document.getElementById("task_radio_archive_latest");
+                const archiveStartEl = document.getElementById("task_archive_start");
+                const archiveEndEl = document.getElementById("task_archive_end");
+
+                datePicker(archiveStartEl, { getMax: () => archiveEndEl.value || null });
+                datePicker(archiveEndEl, { getMin: () => archiveStartEl.value || null });
+
+                function yyyymm(date) {
+                    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+                }
+
+                function updateArchiveDates() {
+                    const enabled = archiveSwitch.checked;
+                    const required = enabled && archiveAll.checked;
+
+                    archiveStartEl.disabled = !enabled;
+                    archiveEndEl.disabled = !enabled;
+                    archiveStartEl.required = required;
+                    archiveEndEl.required = required;
+
+                    if (required && !archiveEndEl.value) {
+                        archiveEndEl.value = yyyymm(new Date());
+                    }
+                    if (required && !archiveStartEl.value) {
+                        const start = new Date();
+                        start.setFullYear(start.getFullYear() - 2);
+                        archiveStartEl.value = yyyymm(start);
+                    }
+                }
+
+                updateArchiveDates();
+                archiveSwitch.addEventListener("change", updateArchiveDates);
+                [archiveAll, archiveLatest].forEach(r => r.addEventListener("change", updateArchiveDates));
             });
 </script>

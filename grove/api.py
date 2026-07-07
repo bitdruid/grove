@@ -21,12 +21,16 @@ def api_task():
         task_target = util.cleanup_url(user_input=task_target, cut_path=True)
         task_source = request.form.get("task_source", None)
         task_archive = request.form.get("task_archive", None)
+        task_archive_start = request.form.get("task_archive_start", None)
+        task_archive_end = request.form.get("task_archive_end", None)
         task_screenshot = request.form.get("task_screenshot", None)
         task_subdomain = request.form.get("task_subdomain", None)
         task_hyperlink = request.form.getlist("task_hyperlink[]", None)
         job_config = {
             "task_source": task_source,
             "task_archive": task_archive,
+            "task_archive_start": task_archive_start,
+            "task_archive_end": task_archive_end,
             "task_screenshot": task_screenshot,
             "task_subdomain": task_subdomain,
             "task_hyperlink": task_hyperlink,

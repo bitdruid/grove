@@ -24,7 +24,9 @@ class JobConfig:
         self.source_index = False
         self.source_full = False
         self.archive_latest = False
-        self.archive_2y = False
+        self.archive_all = False
+        self.archive_start = None
+        self.archive_end = None
         self.screenshot_index = False
         self.screenshot_full = False
         self.subdomain = False
@@ -37,7 +39,9 @@ class JobConfig:
 
         archive = self.raw.get("task_archive")
         self.archive_latest = archive == "latest"
-        self.archive_2y = archive == "2y"
+        self.archive_all = archive == "all"
+        self.archive_start = self.raw.get("task_archive_start") or None
+        self.archive_end = self.raw.get("task_archive_end") or None
 
         screenshot = self.raw.get("task_screenshot")
         self.screenshot_index = screenshot == "index"

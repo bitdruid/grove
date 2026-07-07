@@ -103,7 +103,10 @@ def _tick(previous: dict[str, int]) -> dict[str, int]:
 
         if total <= previous.get(row.job_id, 0):
             if row.job_status != "stuck":
-                logger.warning(msg=f"Job [{row.job_id}] does not respond", extra={"job_id": row.job_id})
+                logger.warning(
+                    msg=f"Job [{row.job_id}] does not respond - may regenerate",
+                    extra={"job_id": row.job_id},
+                )
                 row.job_status = "stuck"
                 database.db.session.commit()
         else:

@@ -123,16 +123,16 @@ def task_source_full(job_id: str) -> str:
 @celery_app.task(name="job.archive_latest", soft_time_limit=_DOWNLOAD_SOFT_LIMIT, time_limit=_DOWNLOAD_HARD_LIMIT)
 def task_archive_latest(job_id: str) -> str:
     job = _load(job_id)
-    downloader.archive_latest(job_id, job.job_path)
+    downloader.archive_latest(job_id, job.job_path, start=job.job_config.archive_start, end=job.job_config.archive_end)
     _mark(job, "archive_latest")
     return job_id
 
 
-@celery_app.task(name="job.archive_2y", soft_time_limit=_DOWNLOAD_SOFT_LIMIT, time_limit=_DOWNLOAD_HARD_LIMIT)
-def task_archive_2y(job_id: str) -> str:
+@celery_app.task(name="job.archive_all", soft_time_limit=_DOWNLOAD_SOFT_LIMIT, time_limit=_DOWNLOAD_HARD_LIMIT)
+def task_archive_all(job_id: str) -> str:
     job = _load(job_id)
-    downloader.archive_2y(job_id, job.job_path)
-    _mark(job, "archive_2y")
+    downloader.archive_all(job_id, job.job_path, start=job.job_config.archive_start, end=job.job_config.archive_end)
+    _mark(job, "archive_all")
     return job_id
 
 
@@ -198,8 +198,8 @@ def build_pipeline(job: _Job):
         steps.append("source_full")
     if job.job_config.archive_latest:
         steps.append("archive_latest")
-    if job.job_config.archive_2y:
-        steps.append("archive_2y")
+    if job.job_config.archive_all:
+        steps.append("archive_all")
     if job.job_config.screenshot_index or job.job_config.screenshot_full:
         steps.append("screenshot")
     steps.extend(["img_ocr", "pdf_ocr", "exif", "mail", "search_index"])
@@ -213,7 +213,7 @@ def build_pipeline(job: _Job):
         "source_index": task_source_index,
         "source_full": task_source_full,
         "archive_latest": task_archive_latest,
-        "archive_2y": task_archive_2y,
+        "archive_all": task_archive_all,
         "screenshot": task_screenshot,
         "img_ocr": task_img_ocr,
         "pdf_ocr": task_pdf_ocr,

@@ -27,4 +27,5 @@ Possible features and gaps, carried over from the original PHP project. Referenc
 
 <!-- - [ ] Presets — `basic`/`fast`/`full` + CRUD (`tbl_system_preset`) -->
 - [ ] Toolkit page — standalone one-shot tools outside the job pipeline (`toolkit`)
+- [ ] Search setting — UI toggle for stemming (on = prose recall, off = verbatim match) + "rebuild index" button
 - [ ] Helpers: perceptual image hashing / dedup, rotating API/DNS proxy

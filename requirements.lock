@@ -87,7 +87,7 @@ python-engineio==4.13.3
 python-magic-standalone==0.4.28
 python-socketio==5.16.3
 python-whois==0.9.6
-pywaybackup==4.2.0
+pywaybackup==4.2.1
 PyYAML==6.0.3
 rcssmin==1.2.2
 redis==6.4.0

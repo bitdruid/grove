@@ -20,7 +20,7 @@ import os
 import shutil
 
 from whoosh import index as windex
-from whoosh.analysis import StemmingAnalyzer
+from whoosh.analysis import LowercaseFilter, RegexTokenizer
 from whoosh.fields import ID, NUMERIC, Schema, TEXT
 from whoosh.highlight import ContextFragmenter, HtmlFormatter
 from whoosh.qparser import QueryParser
@@ -42,21 +42,27 @@ SKIP_MIME_EXACT = ("application/pdf", "application/zip", "application/gzip", "ap
 
 _TEXT_BYTES = set(bytes(range(32, 127)) + b"\n\r\t\f\b")
 
+# keep internal "@" so an email stays one token (test@hans.de), findable via *@*
+# leading "@" is still dropped - "@media"/"@handle" searches are unchanged
+# no stemming to keep mails/domains searchable
+_TOKEN_EXPR = r"\w+([.@]?\w+)*"
+_ANALYZER = RegexTokenizer(expression=_TOKEN_EXPR) | LowercaseFilter()
+
 
 # index location
 
+
 def _job_index_dir(job_id: str) -> str:
-    # job_id == the job's folder name, so the index lives under the job dir in
-    # meta/ (excluded from the zip bundle) and is removed when the job dir is.
+    # index lives under the job dir in meta/ (excluded from zip) - is removed when job dir is
     return os.path.join(JOBS_ROOT, job_id, "meta", "index")
 
 
 def _schema() -> Schema:
     return Schema(
-        job=ID(stored=True),  # owning job_id (for display + filtering)
-        path=ID(stored=True),  # on-disk file path (as stored in tbl_code)
+        job=ID(stored=True),
+        path=ID(stored=True),
         chunk=NUMERIC(stored=True),  # chunk ordinal within the file
-        content=TEXT(stored=False, analyzer=StemmingAnalyzer()),  # unstored: never duplicated
+        content=TEXT(stored=False, analyzer=_ANALYZER),  # unstored: never duplicated
     )
 
 
@@ -166,6 +172,7 @@ def drop_all() -> None:
 
 
 # querying
+
 
 def search_all(query_str: str, limit: int = 100) -> list[dict]:
     """

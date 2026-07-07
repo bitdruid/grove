@@ -15,6 +15,12 @@
 
 [About](#about) • [What it does](#what-it-does) • [Quick start](#quick-start) • [Stack](#stack) • [Environment](#environment) • [Volumes \& persistence](#volumes--persistence) • [Local dev](#local-dev) • [Dependencies](#dependencies)
 
+<a href="media/example1.jpg"><img src="media/example1.jpg" width="666" alt="Example1"></a>
+<br>
+<a href="media/example2.jpg"><img src="media/example2.jpg" width="666" alt="Example2"></a>
+<br>
+<a href="media/example3.jpg"><img src="media/example3.jpg" width="666" alt="Example3"></a>
+
 </div>
 
 ___

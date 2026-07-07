@@ -49,26 +49,46 @@ def __source(mode: str, job_id, url_list: list, source_path: str):
         logger.error(msg=f"Error downloading source:\n{e}", extra={"job_id": job_id}, exc_info=True)
 
 
-def __archive(mode, job_id, url_list: list, archive_path: str, meta_path: str) -> bool:
+def __archive(
+    mode, job_id, url_list: list, archive_path: str, meta_path: str, start: str = None, end: str = None
+) -> bool:
     try:
         if not url_list:
             return True
-        # One call on the domain: pywaybackup matches by URL prefix (no explicit=), so
-        # domain/* — every subpage/subdomain — is covered. Looping the hlinks would just
-        # re-fetch subsets and spawn multiple PyWayBackup instances (in-process index clash).
+        # matches by URL prefix (no explicit=) - domain/* - every subpage/subdomain is covered
         domain = url_list[0]
         backup = None
+        # log the archive params as received, before the dates are stripped to bare digits
+        logger.info(
+            msg=f"Archive download for [{domain}]: mode [{mode}], range [{start or '*'} → {end or '*'}]",
+            extra={"job_id": job_id},
+        )
+        # form gives ISO, pywaybackup wants bare digits
+        start = start.replace("-", "") if start else None
+        end = end.replace("-", "") if end else None
+        # statuscode 200 = server-side CDX filter, drops originally-dead/redirect-stub
         # output = downloaded site content; metadata = pywaybackup's own csv/db/cdx bookkeeping.
         # silent + no progress: the tqdm bars are noise in a non-TTY worker and get doubled by celery stdout/stderr
         if "latest" in mode:
             backup = PyWayBackup(
-                url=domain, last=True, output=archive_path, metadata=meta_path, workers=4, silent=True, progress=False
+                url=domain,
+                last=True,
+                start=start,
+                end=end,
+                statuscode="200",
+                output=archive_path,
+                metadata=meta_path,
+                workers=4,
+                silent=True,
+                progress=False,
             )
-        if "2y" in mode:
+        if "all" in mode:
             backup = PyWayBackup(
                 url=domain,
                 all=True,
-                range=2,
+                start=start,
+                end=end,
+                statuscode="200",
                 output=archive_path,
                 metadata=meta_path,
                 workers=4,
@@ -94,14 +114,16 @@ def __db_read(job_id: str) -> list:
     return url_list
 
 
-def _request(mode: str, job_id: str, job_path: str):
+def _request(mode: str, job_id: str, job_path: str, start: str = None, end: str = None):
     """
     Downloads source code or archived content for the given job's domain.
 
     Args:
-        mode: One of 'source_index', 'source_full', 'archive_latest', 'archive_2y'.
+        mode: One of 'source_index', 'source_full', 'archive_latest', 'archive_all'.
         job_id: The unique identifier for the job.
         job_path: Filesystem path where job-related files are stored.
+        start: Optional ISO start date (YYYY-MM-DD) bounding the archive query.
+        end: Optional ISO end date (YYYY-MM-DD) bounding the archive query.
     """
     logger.info(msg=f"Request received mode [{mode}]", extra={"job_id": job_id})
     url_list = __db_read(job_id=job_id)
@@ -111,7 +133,15 @@ def _request(mode: str, job_id: str, job_path: str):
     if "archive" in mode:
         archive_path = f"{job_path}/code/archive"
         meta_path = f"{job_path}/meta/waybackup"
-        __archive(mode=mode, job_id=job_id, url_list=url_list, archive_path=archive_path, meta_path=meta_path)
+        __archive(
+            mode=mode,
+            job_id=job_id,
+            url_list=url_list,
+            archive_path=archive_path,
+            meta_path=meta_path,
+            start=start,
+            end=end,
+        )
 
 
 def source_index(job_id: str, job_path: str):
@@ -122,9 +152,9 @@ def source_full(job_id: str, job_path: str):
     _request(mode="source_full", job_id=job_id, job_path=job_path)
 
 
-def archive_latest(job_id: str, job_path: str):
-    _request(mode="archive_latest", job_id=job_id, job_path=job_path)
+def archive_latest(job_id: str, job_path: str, start: str = None, end: str = None):
+    _request(mode="archive_latest", job_id=job_id, job_path=job_path, start=start, end=end)
 
 
-def archive_2y(job_id: str, job_path: str):
-    _request(mode="archive_2y", job_id=job_id, job_path=job_path)
+def archive_all(job_id: str, job_path: str, start: str = None, end: str = None):
+    _request(mode="archive_all", job_id=job_id, job_path=job_path, start=start, end=end)

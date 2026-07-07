@@ -1,0 +1,95 @@
+/* datepicker - small month/year picker */
+
+.datepicker-popup {
+    position: absolute;
+    z-index: 1060;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--app-border);
+    border-radius: var(--bs-border-radius);
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .3);
+    padding: .5rem;
+    width: 13rem;
+}
+
+.datepicker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 .25rem .5rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+.datepicker-year-group {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+}
+
+.datepicker-scroll-hint {
+    font-size: 1rem;
+    color: currentColor;
+}
+
+.datepicker-nav {
+    cursor: pointer;
+    padding: .1rem .5rem;
+    border-radius: var(--bs-border-radius-sm);
+    color: var(--bs-body-color);
+    user-select: none;
+}
+
+.datepicker-nav:hover {
+    background: var(--bs-tertiary-bg);
+}
+
+.datepicker-nav:disabled,
+.datepicker-nav[disabled] {
+    opacity: .3;
+    pointer-events: none;
+}
+
+.datepicker-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .25rem;
+}
+
+.datepicker-month {
+    border: 1px solid transparent;
+    border-radius: var(--bs-border-radius-sm);
+    background: none;
+    color: var(--bs-body-color);
+    padding: .4rem 0;
+    cursor: pointer;
+}
+
+.datepicker-month:hover:not(:disabled) {
+    background: var(--bs-tertiary-bg);
+}
+
+.datepicker-month.today {
+    border-color: var(--app-border);
+}
+
+.datepicker-month.selected {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+.datepicker-month:disabled {
+    color: var(--bs-secondary-color);
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+/* trigger field: slimmer than .form-control-sm's default height, and rounded to
+   match the app's regular (non -sm) inputs rather than the smaller -sm radius */
+.datepicker-input {
+    height: 1.5rem;
+    min-height: 1.5rem;
+    padding: 0 .5rem;
+    line-height: 1.5rem;
+    border-radius: var(--bs-border-radius);
+}
