@@ -1,0 +1,17 @@
+
+<div class="modal fade" id="modalCodeOcr{{ codefile.id }}" tabindex="-1" aria-labelledby="modalCodeOcrLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" aria-labelledby="modalCodeOcrLabel">OCR</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-start">
+                <pre class="mb-0" style="font-family: var(--bs-body-font-family); font-size: inherit; white-space: pre-wrap; word-break: break-word;">{{ codefile.c_code_ocr }}</pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

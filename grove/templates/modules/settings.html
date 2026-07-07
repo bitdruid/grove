@@ -1,0 +1,217 @@
+<div class="card mb-3">
+    <div class="card-header">Database</div>
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+            <button data-confirm-action="{{ url_for('api.api_settings') }}" data-confirm-title="Prune App ?" data-confirm-name="settings" data-confirm-value="prune_app" class="btn btn-danger btn-confirm-modal">
+                Prune App
+            </button>
+            <button data-confirm-action="{{ url_for('api.api_settings') }}" data-confirm-title="Prune Log ?" data-confirm-name="settings" data-confirm-value="prune_log" class="btn btn-primary btn-confirm-modal">
+                Prune Log
+            </button>
+            {% if indexdata.sqlite_web %}
+                <button type="button" class="btn btn-secondary" onclick="window.open(location.protocol + '//' + location.hostname + ':{{ indexdata.sqlite_web_port }}', '_blank', 'noopener')">
+                    Open DB Browser
+                </button>
+            {% else %}
+                <button type="button" class="btn btn-outline-secondary" disabled
+                        title="Set the SQLITE_WEB env var (and expose port {{ indexdata.sqlite_web_port }}) to enable the sqlite-web browser">
+                    DB Browser (disabled)
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">Live-Log</div>
+    <div class="card-body p-2">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <span id="livelog-status" class="badge bg-secondary">idle</span>
+            <select id="livelog-level" class="form-select form-select-sm" style="width:auto">
+                <option value="DEBUG">DEBUG</option>
+                <option value="INFO" selected>INFO</option>
+                <option value="WARN">WARN</option>
+                <option value="ERROR">ERROR</option>
+            </select>
+            <input id="livelog-filter" type="text" class="form-control form-control-sm" placeholder="filter…" style="max-width:14rem">
+            <div class="form-check form-switch ms-2">
+                <input class="form-check-input" type="checkbox" id="livelog-autoscroll" checked>
+                <label class="form-check-label small" for="livelog-autoscroll">auto-scroll</label>
+            </div>
+            <button id="livelog-pause" class="btn btn-sm btn-outline-warning ms-auto">Pause</button>
+            <a id="livelog-download" href="{{ url_for('api.api_log_download') }}" class="btn btn-sm btn-outline-secondary" download title="Download full log">Download</a>
+            <button id="livelog-clear" class="btn btn-sm btn-outline-secondary">Clear</button>
+        </div>
+        <div id="livelog" class="livelog datablock-scroll"></div>
+    </div>
+</div>
+
+<style>
+    .livelog {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.35;
+        background: #0e1116;
+        color: #d0d7de;
+        padding: .5rem .75rem;
+        height: 22rem;
+        overflow: auto;
+        white-space: pre;
+        word-break: normal;
+        border-radius: .25rem;
+    }
+    .livelog .line { display: block; }
+    .livelog .ts    { color: #6e7681; }
+    .livelog .lvl   { font-weight: 600; }
+    .livelog .mod   { color: #79c0ff; }
+    .livelog .lvl-DEBUG { color: #8b949e; }
+    .livelog .lvl-INFO  { color: #58a6ff; }
+    .livelog .lvl-WARN  { color: #d29922; }
+    .livelog .lvl-ERROR { color: #f85149; }
+    .livelog .lvl-CRIT  { color: #ffffff; background: #f85149; padding: 0 .25rem; border-radius: 2px; }
+    .livelog .line.hidden { display: none; }
+
+    /* light theme: github-light palette so the panel isn't a black block */
+    [data-bs-theme="light"] .livelog       { background: #f6f8fa; color: #1f2328; border: 1px solid var(--app-border); }
+    [data-bs-theme="light"] .livelog .ts   { color: #656d76; }
+    [data-bs-theme="light"] .livelog .mod  { color: #0969da; }
+    [data-bs-theme="light"] .livelog .lvl-DEBUG { color: #656d76; }
+    [data-bs-theme="light"] .livelog .lvl-INFO  { color: #0969da; }
+    [data-bs-theme="light"] .livelog .lvl-WARN  { color: #9a6700; }
+    [data-bs-theme="light"] .livelog .lvl-ERROR { color: #cf222e; }
+    [data-bs-theme="light"] .livelog .lvl-CRIT  { color: #ffffff; background: #cf222e; }
+</style>
+
+<script>
+    (function() {
+        const LEVELS = { DEBUG: 10, INFO: 20, WARN: 30, WARNING: 30, ERROR: 40, CRIT: 50, CRITICAL: 50 };
+        const SHORT  = { WARNING: "WARN", CRITICAL: "CRIT" };
+        const MAX_LINES = 2000;
+        const shortLevel = (lvl) => SHORT[lvl] || lvl;
+
+        const view      = document.getElementById('livelog');
+        const status    = document.getElementById('livelog-status');
+        const levelSel  = document.getElementById('livelog-level');
+        const filterIn  = document.getElementById('livelog-filter');
+        const autoChk   = document.getElementById('livelog-autoscroll');
+        const pauseBtn  = document.getElementById('livelog-pause');
+        const clearBtn  = document.getElementById('livelog-clear');
+
+        let paused      = false;
+        let subscribed  = false;
+        let pendingBuf  = [];
+        let flushTimer  = null;
+
+        function setStatus(text, cls) {
+            status.textContent = text;
+            status.className = 'badge bg-' + cls;
+        }
+
+        function escapeHTML(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => ({
+                '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+            }[c]));
+        }
+
+        function rowVisible(el) {
+            const lvl = el.dataset.level || 'INFO';
+            if ((LEVELS[lvl] || 0) < (LEVELS[levelSel.value] || 0)) return false;
+            const q = filterIn.value.trim().toLowerCase();
+            if (q && !el.dataset.search.includes(q)) return false;
+            return true;
+        }
+
+        function buildRow(line) {
+            const row = document.createElement('div');
+            row.className = 'line';
+            const short = shortLevel(line.level || 'INFO');
+            row.dataset.level = short;
+            const searchable = `${line.ts} ${short} ${line.module}.${line.func} ${line.msg}`.toLowerCase();
+            row.dataset.search = searchable;
+            row.innerHTML =
+                `<span class="ts">${escapeHTML(line.ts)}</span> ` +
+                `<span class="lvl lvl-${escapeHTML(short)}">${escapeHTML(short)}</span> ` +
+                `<span class="mod">${escapeHTML(line.module)}.${escapeHTML(line.func)}</span> ` +
+                `<span class="msg">${escapeHTML(line.msg)}</span>`;
+            if (!rowVisible(row)) row.classList.add('hidden');
+            return row;
+        }
+
+        function nearBottom() {
+            return view.scrollHeight - view.scrollTop - view.clientHeight < 24;
+        }
+
+        function flush() {
+            flushTimer = null;
+            if (!pendingBuf.length) return;
+            const wasBottom = nearBottom();
+            const frag = document.createDocumentFragment();
+            for (const line of pendingBuf) frag.appendChild(buildRow(line));
+            pendingBuf = [];
+            view.appendChild(frag);
+            // trim
+            while (view.childElementCount > MAX_LINES) view.removeChild(view.firstElementChild);
+            if (autoChk.checked && wasBottom) view.scrollTop = view.scrollHeight;
+        }
+
+        function push(line) {
+            if (paused) return;
+            pendingBuf.push(line);
+            if (!flushTimer) flushTimer = requestAnimationFrame(flush);
+        }
+
+        function reapplyFilter() {
+            for (const row of view.children) {
+                row.classList.toggle('hidden', !rowVisible(row));
+            }
+            if (autoChk.checked) view.scrollTop = view.scrollHeight;
+        }
+
+        function subscribe() {
+            if (subscribed) return;
+            subscribed = true;
+            view.innerHTML = '';
+            socket.emit('subscribe_log');
+            // request history only if already connected; otherwise the connect handler does it
+            if (socket.connected) socket.emit('request_log');
+            setStatus('live', 'success');
+        }
+
+        function unsubscribe() {
+            if (!subscribed) return;
+            subscribed = false;
+            socket.emit('unsubscribe_log');
+            setStatus('idle', 'secondary');
+        }
+
+        socket.on('connect',    () => { if (subscribed) { socket.emit('subscribe_log'); socket.emit('request_log'); setStatus('live', 'success'); } });
+        socket.on('disconnect', () => { if (subscribed) setStatus('disconnected', 'danger'); });
+
+        socket.on('log_history', (data) => {
+            view.innerHTML = '';
+            if (data && Array.isArray(data.lines)) {
+                const frag = document.createDocumentFragment();
+                for (const line of data.lines) frag.appendChild(buildRow(line));
+                view.appendChild(frag);
+                view.scrollTop = view.scrollHeight;
+            }
+        });
+
+        socket.on('log_line', (line) => push(line));
+
+        levelSel.addEventListener('change', reapplyFilter);
+        filterIn.addEventListener('input',  reapplyFilter);
+
+        pauseBtn.addEventListener('click', () => {
+            paused = !paused;
+            pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+            pauseBtn.classList.toggle('btn-warning', paused);
+            pauseBtn.classList.toggle('btn-outline-warning', !paused);
+            if (subscribed) setStatus(paused ? 'paused' : 'live', paused ? 'warning' : 'success');
+        });
+        clearBtn.addEventListener('click', () => { view.innerHTML = ''; });
+
+        // Panel is always visible now (no accordion), so start streaming on load.
+        subscribe();
+    })();
+</script>

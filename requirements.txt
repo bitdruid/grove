@@ -1,0 +1,38 @@
+## lint
+djlint
+## db browser
+sqlite-web
+## task queue
+celery[redis]
+redis
+psutil
+## FLASK
+flask
+gunicorn
+gunicorn[eventlet]
+Flask-SocketIO
+Flask-Minify
+Flask-SQLAlchemy
+pyyaml
+dotenv
+## domaintools
+dnspython
+requests
+pillow
+img2pdf
+playwright
+python-whois
+pywaybackup
+sublist3r @ git+https://github.com/bitdruid/Sublist3r.git
+# search
+whoosh-reloaded
+# utils: ocr mime
+setuptools
+# cpu-only torch (pulled by easyocr); GPU users: drop the --extra-index-url line; else cpu outranks
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
+easyocr
+ocrmypdf
+pdftotext
+python-magic-standalone

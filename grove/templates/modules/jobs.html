@@ -1,0 +1,142 @@
+{% if not job_list %}
+    <div class="text-center">
+        <h3 class="m-0">no jobs</h3>
+    </div>
+{% else %}
+
+    <div class="accordion accordion-flush" id="accordionJobs">
+
+        {% for job in job_list %}
+
+            <div class="accordion-item" data-job-id="{{ job.job_id }}" data-status="{{ job.job_status }}">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed d-flex align-items-center gap-3" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#collapse{{ job.job_id }}"
+                            aria-expanded="false" aria-controls="collapse{{ job.job_id }}">
+                        <pre class="m-0 text-truncate" style="flex: 1 1 12rem; min-width: 0; color: var(--app-accent);"><b>{{ job.job_id }}</b></pre>
+                        <pre class="m-0" style="flex: 1 1 12rem; min-width: 0; overflow: hidden;">start: {{ job.job_date_start }}{% if job.job_date_end %}
+  end: {{ job.job_date_end }}{% endif %}</pre>
+                        {# on-disk footprint + db rows, refreshed by the health check #}
+                        <pre class="m-0 text-secondary" style="flex: 0 0 8rem; min-width: 0; overflow: hidden;">size: <span id="size-{{ job.job_id }}">{{ job.size_human }}</span>
+rows: <span id="rows-{{ job.job_id }}">{{ "{:,}".format(job.db_rows) }}</span></pre>
+                        {% if job.job_status == 'process' %}
+                            {# keep the running-octocat gif for the active state #}
+                            <img src="{{ url_for('static', filename='icon/process.gif') }}"
+                                 height="24" width="24"
+                                 style="flex-shrink: 0;"
+                                 alt="process"
+                                 data-bs-toggle="tooltip" data-bs-placement="top"
+                                 title="process">
+                        {% else %}
+                            {% set status_icon = {
+                                'new':     ('bi-hourglass-split',       'status-neutral'),
+                                'prepare': ('bi-gear',                  'status-neutral'),
+                                'ready':   ('bi-play-circle',           'status-neutral'),
+                                'done':    ('bi-check-circle',          'status-neutral'),
+                                'stuck':   ('bi-exclamation-triangle',  'status-stuck'),
+                                'error':   ('bi-x-circle',              'status-error'),
+                            }.get(job.job_status, ('bi-question-circle', 'status-neutral')) %}
+                            <i class="bi {{ status_icon[0] }} {{ status_icon[1] }}"
+                               style="font-size: 1.5rem; flex-shrink: 0;"
+                               data-bs-toggle="tooltip" data-bs-placement="top"
+                               title="{{ job.job_status }}"></i>
+                        {% endif %}
+                        {# bar color encodes state; stripes animate while still running #}
+                        {% set bar_class = {'done':'text-bg-success','error':'text-bg-danger','stuck':'text-bg-warning'}.get(job.job_status, 'text-bg-primary') %}
+                        {% set bar_active = job.job_status not in ['done', 'error', 'stuck'] %}
+                        <div class="d-flex align-items-center" style="flex: 0 0 7rem;">
+                            <div class="progress w-100" role="progressbar" aria-valuenow="{{ job.progress }}" aria-valuemin="0" aria-valuemax="100" style="height: 2vh;">
+                                <div class="progress-bar {{ bar_class }}{% if bar_active %} progress-bar-striped progress-bar-animated{% endif %}" id="progress-{{ job.job_id }}" style="width: {{ job.progress }}%">{{ job.progress }}%</div>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div id="collapse{{ job.job_id }}" class="accordion-collapse collapse" data-bs-parent="#accordionJobs">
+                    <div class="accordion-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            <form action="{{ url_for('api.api_jobs') }}" method="post" class="d-flex gap-2">
+                                <button class="btn btn-secondary btn-sm" name="result" value="{{ job.job_id }}" type="submit"
+                                        data-bs-toggle="tooltip" data-bs-placement="top" title="Results" aria-label="Results">
+                                    <i class="bi bi-journals" style="font-size: 1.2rem;"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-sm" name="download" value="{{ job.job_id }}" type="submit"
+                                        data-bs-toggle="tooltip" data-bs-placement="top" title="Download" aria-label="Download">
+                                    <i class="bi bi-download" style="font-size: 1.2rem;"></i>
+                                </button>
+                            </form>
+                            <button data-confirm-action="{{ url_for('api.api_jobs') }}" data-confirm-name="restart" data-confirm-value="{{ job.job_id }}"
+                                    data-confirm-title="Restart job {{ job.job_id }} ?" class="btn btn-secondary btn-sm btn-confirm-modal"
+                                    title="Restart" aria-label="Restart"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover">
+                                <i class="bi bi-arrow-clockwise" style="font-size: 1.2rem;"></i>
+                            </button>
+                            <button data-confirm-action="{{ url_for('api.api_jobs') }}" data-confirm-name="delete" data-confirm-value="{{ job.job_id }}"
+                                    data-confirm-title="Delete job {{ job.job_id }} ?" class="btn btn-secondary btn-sm btn-confirm-modal"
+                                    title="Delete" aria-label="Delete"
+                                    data-bs-toggle="tooltip" data-bs-placement="top" data-bs-trigger="hover">
+                                <i class="bi bi-trash" style="font-size: 1.2rem;"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+{% endif %}
+
+<script>
+    function humanBytes(n) {
+        n = Number(n) || 0;
+        var units = ["B", "KB", "MB", "GB"];
+        for (var i = 0; i < units.length; i++) {
+            var u = units[i];
+            if (n < 1024 || u === "GB") {
+                return (u === "B" || u === "KB") ? n.toFixed(0) + " " + u : n.toFixed(1) + " " + u;
+            }
+            n /= 1024;
+        }
+    }
+
+    // ONE unified per-job channel
+    socket.on("server_event", function(data) {
+        if (!data || !data.job) return;
+        var j = data.job;
+        var item = document.querySelector('[data-job-id="' + j.job_id + '"]');
+        if (!item || item.dataset.status !== j.status) {
+            location.reload();
+            return;
+        }
+
+        // progress bar (from task list) + its task-breakdown tooltip
+        var tasks = j.tasks || [];
+        var total = tasks.length;
+        var done = tasks.filter(function(t) { return t.status === "done"; }).length;
+        var percent = total > 0 ? Math.round((done / total) * 100) : 0;
+        var bar = document.getElementById("progress-" + j.job_id);
+        if (bar) {
+            bar.style.width = percent + "%";
+            bar.textContent = percent + "%";
+            var wrapper = bar.closest("[data-bs-toggle='tooltip']");
+            if (wrapper) {
+                var rows = tasks.map(function(t) {
+                    return "<tr><td>" + t.task + "</td><td>" + t.status + "</td></tr>";
+                }).join("");
+                var html = "<table class='table table-borderless table-sm text-start m-0'>" + rows + "</table>";
+                var tooltip = bootstrap.Tooltip.getInstance(wrapper);
+                if (tooltip) {
+                    wrapper.setAttribute("data-bs-original-title", html);
+                    tooltip.update();
+                }
+            }
+        }
+
+        // on-disk size + db rows
+        var sizeEl = document.getElementById("size-" + j.job_id);
+        if (sizeEl) sizeEl.textContent = humanBytes(j.bytes);
+        var rowsEl = document.getElementById("rows-" + j.job_id);
+        if (rowsEl) rowsEl.textContent = Number(j.rows || 0).toLocaleString();
+    });
+</script>

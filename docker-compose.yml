@@ -1,0 +1,30 @@
+# build it
+
+services:
+  grove:
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      # scraper
+      - "5000:5000"
+      # sqlite-web
+      - "5001:5001"
+    restart: unless-stopped
+    # optional vol
+    # volumes:
+    #   - ./jobs:/app/jobs
+    #   - ./instance:/app/instance
+
+# get it
+
+# services:
+#   grove:
+#     image: bitdruid/grove:latest
+#     ports:
+#       - "5000:5000"
+#       - "5001:5001"
+#     restart: unless-stopped
+#     volumes:
+#       - ./jobs:/app/jobs
+#       - ./instance:/app/instance

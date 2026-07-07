@@ -1,0 +1,295 @@
+/* result.css — compact, coherent styling for the results page, scoped under
+   #accordionResults. Driven by one data font-size (--r-fs) and one gap (--r-gap). */
+
+#accordionResults {
+    --r-fs: 0.8125rem;        /* 13px — the single size for all result data */
+    --r-fs-head: 0.875rem;    /* section header label */
+    --r-gap: 0.5rem;          /* the one vertical/horizontal rhythm */
+    --r-mono: Consolas, "Cascadia Mono", ui-monospace, monospace;
+
+    /* Denser chrome than the app-wide accordion (jobs page can breathe; the
+       results page wants data density instead). */
+    --bs-accordion-btn-padding-y: 0.5rem;
+    --bs-accordion-btn-padding-x: 0.75rem;
+}
+
+/* ---- section headers -------------------------------------------------- */
+
+/* Bold, accent label — one size for every top-level section. Nested headers
+   (per-email) are intentionally excluded so they read as sub-rows. */
+#accordionResults > .accordion-item > .accordion-header > .accordion-button {
+    font-weight: 600;
+}
+
+#accordionResults > .accordion-item > .accordion-header > .accordion-button code {
+    font-size: var(--r-fs-head);
+}
+
+/* Chevron before the label instead of pushed to the far right. */
+#accordionResults .accordion-button::after {
+    order: -1;
+    margin-left: 0;
+    margin-right: 0.6rem;
+}
+
+/* Count pill (.r-count) is a shared component defined in custom.css so the
+   navbar Jobs counter matches the section counts here. */
+
+/* ---- body: one font-size, one padding -------------------------------- */
+
+#accordionResults .accordion-body,
+#accordionResults [class*="accordion-body-scrollable"] {
+    padding: 0.6rem 0.75rem 0.6rem 1rem;
+    font-size: var(--r-fs);
+}
+
+/* Body font for result content; mono only for ljust-padded dumps (.mono),
+   whose column alignment needs a fixed-width face. */
+#accordionResults pre:not(.mono),
+#accordionResults code:not(.mono) {
+    font-family: var(--bs-body-font-family);
+}
+
+/* ---- key / value fields ---------------------------------------------- */
+
+/* Responsive two-up grid for paired panels (Domain|IP, A|AAAA). */
+#accordionResults .r-cols2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--r-gap);
+}
+
+@media (max-width: 720px) {
+    #accordionResults .r-cols2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* A labeled field: small accent label row + a bordered data block. */
+#accordionResults .r-field + .r-field {
+    margin-top: var(--r-gap);
+}
+
+#accordionResults .r-field-head {
+    display: flex;
+    align-items: center;
+    gap: var(--r-gap);
+    margin-bottom: 0.25rem;
+    min-height: 1.5rem;
+}
+
+#accordionResults .r-label {
+    font-size: var(--r-fs);
+    font-weight: 600;
+    color: var(--app-accent);
+}
+
+/* Data block: tight margins, boxed against the surface so blocks read as
+   discrete values rather than floating text. */
+#accordionResults .r-pre {
+    margin: 0;
+    padding: 0.4rem 0.55rem;
+    font-size: var(--r-fs);
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--app-border);
+    border-radius: var(--bs-border-radius-sm);
+}
+
+#accordionResults .r-pre.mono {
+    font-family: var(--r-mono);
+    white-space: pre;
+    overflow-x: auto;
+}
+
+/* Map link under a geoip block sits tight to it. */
+#accordionResults .r-sublink {
+    display: inline-block;
+    margin-top: 0.25rem;
+    font-size: var(--r-fs);
+}
+
+/* ---- tables ----------------------------------------------------------- */
+
+/* Column labels (the <code> in <th>/<td> headers): quiet, uppercased tags
+   rather than another size of accent text. */
+#accordionResults table thead code {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+#accordionResults table tbody td {
+    vertical-align: middle;
+}
+
+/* Compact rows for every result table. Stock cell padding + 1.5 line-height
+   make rows tall; this pulls them in. */
+#accordionResults .table > :not(caption) > * > * {
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    line-height: 1.35;
+    vertical-align: middle;
+}
+
+/* Inline pre inside table cells: no box, no margin, just the value. */
+#accordionResults td pre {
+    margin: 0;
+}
+
+/* ---- List.js: search / sort / filter / pagination -------------------- */
+
+/* Toolbar above a list-enhanced table: search box + optional filter selects. */
+#accordionResults .r-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--r-gap);
+    margin-bottom: var(--r-gap);
+}
+
+/* Avoid double left-inset: .accordion-body already insets, so the nested
+   scroll wrapper here must not add its own (keeps toolbar/table/pager aligned). */
+#accordionResults .r-list [class*="accordion-body-scrollable"] {
+    padding: 0;
+}
+
+/* Search box: sized to content, not full width; sits left in the toolbar. */
+#accordionResults .r-search {
+    width: auto;
+    min-width: 14rem;
+    flex: 0 1 20rem;
+}
+
+#accordionResults .r-search,
+#accordionResults .r-filter {
+    font-size: var(--r-fs);
+    line-height: 1.35;
+    padding: 0.2rem 0.5rem;
+}
+
+/* Selects need right room for the chevron, otherwise the value sits under it. */
+#accordionResults .r-filter {
+    width: auto;
+    min-width: 9rem;
+    padding-right: 1.9rem;
+    background-position: right 0.6rem center;
+}
+
+/* Sortable header: the <code> label is now a button. Strip button chrome and
+   append a neutral caret that lights up in the active sort direction. */
+#accordionResults .r-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+#accordionResults .r-sort::after {
+    content: "";
+    width: 0;
+    height: 0;
+    border-left: 0.28em solid transparent;
+    border-right: 0.28em solid transparent;
+    border-top: 0.32em solid currentColor;
+    opacity: 0.25;
+    transition: opacity .1s ease, transform .1s ease;
+}
+
+#accordionResults .r-sort.asc::after {
+    opacity: 0.9;
+    transform: rotate(180deg);
+}
+
+#accordionResults .r-sort.desc::after {
+    opacity: 0.9;
+}
+
+/* Centered header columns (exif/ocr/gps): center the label+caret in the cell. */
+#accordionResults .r-sort-center {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+/* Sticky header while the table body scrolls. */
+#accordionResults [class*="accordion-body-scrollable"] thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--app-surface);
+}
+
+/* Pager: prev arrow + page numbers + next arrow, all on one line. */
+#accordionResults .r-pager {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: var(--r-gap);
+}
+
+#accordionResults .r-page-nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.1rem 0.45rem;
+    font-size: var(--r-fs);
+    line-height: 1;
+    color: var(--bs-body-color);
+    background: none;
+    border: 1px solid var(--app-border);
+    border-radius: var(--bs-border-radius-sm);
+    cursor: pointer;
+}
+
+#accordionResults .r-page-nav:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* Pagination: compact page pills. List.js renders <li><a class="page">. */
+#accordionResults .r-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#accordionResults .r-pagination li .page {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    font-size: var(--r-fs);
+    border-radius: var(--bs-border-radius-sm);
+    border: 1px solid var(--app-border);
+    color: var(--bs-body-color);
+    cursor: pointer;
+}
+
+#accordionResults .r-pagination li.active .page {
+    color: var(--app-accent);
+    border-color: color-mix(in srgb, var(--app-accent) 45%, transparent);
+    background: color-mix(in srgb, var(--app-accent) 15%, transparent);
+}
+
+/* ---- email sub-accordion --------------------------------------------- */
+
+/* Per-address rows: normal text, not the <code> accent, and tighter than the
+   app-wide accordion button. */
+#accordionEmail .accordion-button {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+}
+
+#accordionEmail .accordion-button code {
+    color: inherit;
+    font-size: var(--r-fs);
+}

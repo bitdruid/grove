@@ -1,0 +1,484 @@
+{% if job_data %}
+    {% include "extra/modal/result_modal.html" %}
+{% endif %}
+
+{% if not job_data %}
+    <div class="text-center">
+        <h3 class="m-0"><code>no result to view (still running?)</code></h3>
+    </div>
+{% else %}
+
+    <div class="accordion accordion-flush" id="accordionResults">
+
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLookup" aria-expanded="false" aria-controls="collapseLookup">
+                    <code>Lookup</code>
+                </button>
+            </h2>
+            <div id="collapseLookup" class="accordion-collapse collapse" data-bs-parent="#accordionResults">
+                <div class="accordion-body">
+                    <div class="r-cols2">
+                        <div class="r-field">
+                            <div class="r-field-head">
+                                <span class="r-label">Domain</span>
+                                <button type="button" class="btn btn-xs btn-outline-secondary d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalDomainWhois" title="Domain Whois"><i class="bi bi-search"></i> whois</button>
+                            </div>
+                            <pre class="r-pre mono">{{ job_data.tbl_lookup[0].c_lookup_domain_data }}</pre>
+                        </div>
+                        <div class="r-field">
+                            <div class="r-field-head">
+                                <span class="r-label">IP</span>
+                                <button type="button" class="btn btn-xs btn-outline-secondary d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalIPWhois" title="IP Whois"><i class="bi bi-search"></i> whois</button>
+                            </div>
+                            <pre class="r-pre mono">{{ job_data.tbl_lookup[0].c_lookup_ip_data }}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if job_data.tbl_record %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRecords" aria-expanded="false" aria-controls="collapseRecords">
+                        <code>Records</code>
+                    </button>
+                </h2>
+                <div id="collapseRecords" class="accordion-collapse collapse" data-bs-parent="#accordionResults">
+                    <div class="accordion-body">
+                        <div class="r-cols2">
+                            <div class="r-field">
+                                <div class="r-field-head"><span class="r-label">A</span></div>
+                                <pre class="r-pre">{{ job_data.tbl_record[0].c_record_a }}</pre>
+                            </div>
+                            <div class="r-field">
+                                <div class="r-field-head"><span class="r-label">AAAA</span></div>
+                                <pre class="r-pre">{{ job_data.tbl_record[0].c_record_aaaa }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if job_data.tbl_geoip %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGeoip" aria-expanded="false" aria-controls="collapseGeoip">
+                        <code>Geoip</code>&nbsp;<span class="r-count">{{ job_data.tbl_geoip|length }}</span>
+                    </button>
+                </h2>
+                <div id="collapseGeoip" class="accordion-collapse collapse" data-bs-parent="#accordionResults">
+                    <div class="accordion-body">
+                        {% for geoip in job_data.tbl_geoip %}
+                            <div class="r-field">
+                                <div class="r-field-head"><span class="r-label">{{ geoip.c_geoip_api }}</span></div>
+                                <pre class="r-pre mono">{{ geoip.c_geoip_data }}</pre>
+                                <a class="r-sublink" href="{{ geoip.c_geoip_mapurl }}" target="_blank">{{ geoip.c_geoip_mapurl }}</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if job_data.tbl_subdomain %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSubdomain" aria-expanded="false" aria-controls="collapseSubdomain">
+                        <code>Subdomains</code>&nbsp;<span class="r-count">{{ job_data.tbl_subdomain|length }}</span>
+                    </button>
+                </h2>
+                <div id="collapseSubdomain" class="accordion-collapse collapse" data-bs-parent="#accordionResults">
+                    <div class="accordion-body">
+                        <div id="listSubdomain" class="r-list">
+                            <div class="r-toolbar">
+                                <input class="search r-search form-control" placeholder="filter subdomains…" aria-label="Filter subdomains">
+                            </div>
+                            <div class="accordion-body-scrollable-md table-responsive">
+                                <table class="table align-middle text-left m-0">
+                                    <thead>
+                                        <tr>
+                                            <th><button type="button" class="sort r-sort" data-sort="subdomain"><code>subdomain</code></button></th>
+                                            <th><button type="button" class="sort r-sort" data-sort="ipv4"><code>ipv4</code></button></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="list datablock-break">
+                                        {% for subdomain in job_data.tbl_subdomain %}
+                                            <tr>
+                                                <td>
+                                                    <a class="subdomain" href="https://{{ subdomain.c_subdomain_name }}" target="_blank">{{ subdomain.c_subdomain_name }}</a>
+                                                </td>
+                                                <td><pre class="ipv4 m-0">{{ subdomain.c_subdomain_ipv4 }}</pre></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <nav class="r-pager" aria-label="Table pages">
+                                <button type="button" class="r-page-nav" data-nav="prev" aria-label="Previous page"><i class="bi bi-chevron-left"></i></button>
+                                <ul class="pagination r-pagination"></ul>
+                                <button type="button" class="r-page-nav" data-nav="next" aria-label="Next page"><i class="bi bi-chevron-right"></i></button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if job_data.tbl_screenshot %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseScreenshots" aria-expanded="false" aria-controls="collapseScreenshots">
+                        <code>Screenshots</code>&nbsp;<span class="r-count">{{ job_data.tbl_screenshot|length }}</span>
+                    </button>
+                </h2>
+                <div id="collapseScreenshots" class="accordion-collapse collapse" data-bs-parent="#accordionResults">
+                    <div class="accordion-body">
+                        <table class="table align-middle table-borderless text-left m-0">
+                            <thead>
+                                <tr>
+                                    <td><code>img</code></td>
+                                    <td><code>pdf</code></td>
+                                    <td class="w-100"><code>url</code></td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for screenshot in job_data.tbl_screenshot %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('routes.data', filename=screenshot.c_screenshot_file) }}" target="_blank">
+                                                <img src="{{ url_for('routes.data', filename=screenshot.c_screenshot_thumb) }}" height="48" width="48" alt="{{ screenshot.c_screenshot_thumb }}">
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('routes.data', filename=screenshot.c_screenshot_pdf) }}" download="{{ url_for('routes.data', filename=screenshot.c_screenshot_pdf) }}"
+                                               class="btn btn-xs btn-outline-secondary d-inline-flex align-items-center gap-1"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+                                        </td>
+                                        <td>
+                                            <pre class="m-0">{{ screenshot.c_screenshot_url }}</pre>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if job_data.tbl_hlink %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHyperlink" aria-expanded="false" aria-controls="collapseHyperlink">
+                        <code>Hyperlinks</code>&nbsp;<span class="r-count">{{ job_data.tbl_hlink|length }}</span>
+                    </button>
+                </h2>
+                <div id="collapseHyperlink" class="accordion-collapse collapse" data-bs-parent="#accordionResults">
+                    <div class="accordion-body-scrollable-md table-responsive">
+                        <table class="table justify-content-center align-middle text-left m-0">
+                            <thead>
+                                <tr>
+                                    <td style="width:2rem"></td>
+                                    <td><code>link (warning — live url)</code></td>
+                                </tr>
+                            </thead>
+                            <tbody class="datablock-break">
+                                {% for hyperlink in job_data.tbl_hlink %}
+                                    <tr>
+                                        <td style="width:2rem">
+                                            {% if hyperlink.c_hlink_local %}
+                                                <a href="{{ url_for('routes.data', filename=hyperlink.c_hlink_local) }}?as=html"
+                                                   target="_blank"
+                                                   class="btn btn-xs btn-outline-secondary py-0 px-1"
+                                                   title="Open local HTML copy">&lt;/&gt;</a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="https://{{ hyperlink.c_hlink_link }}" target="_blank">{{ hyperlink.c_hlink_link | truncate(150, True, ' ...') }}</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if job_data.tbl_meta %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMetatag" aria-expanded="false" aria-controls="collapseMetatag">
+                        <code>Metatags</code>&nbsp;<span class="r-count">{{ job_data.tbl_meta|length }}</span>
+                    </button>
+                </h2>
+                <div id="collapseMetatag" class="accordion-collapse collapse" data-bs-parent="#accordionResults">
+                    <div class="accordion-body-scrollable-md table-responsive">
+                        <table class="table justify-content-center align-middle text-left m-0">
+                            <thead>
+                                <tr>
+                                    <td class="col-2"><code>tag</code></td>
+                                    <td class="col-10"><code>content</code></td>
+                                </tr>
+                            </thead>
+                            <tbody class="datablock-break">
+                                {% for metatag in job_data.tbl_meta %}
+                                    {% set tag = metatag.c_meta_tag.split(": ")[0] %}
+                                    {% set content = metatag.c_meta_tag.split(": ")[1] %}
+                                    <tr>
+                                        <td>{{ tag }}</td>
+                                        <td>{{ content }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if job_data.tbl_external %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExternal" aria-expanded="false" aria-controls="collapseExternal">
+                        <code>External links</code>&nbsp;<span class="r-count">{{ job_data.tbl_external|length }}</span>
+                    </button>
+                </h2>
+                <div id="collapseExternal" class="accordion-collapse collapse" data-bs-parent="#accordionResults">
+                    <div class="accordion-body-scrollable-md table-responsive">
+                        <table class="table justify-content-center align-middle text-left m-0">
+                            <thead>
+                                <tr>
+                                    <td><code>link</code></td>
+                                </tr>
+                            </thead>
+                            <tbody class="datablock-break">
+                                {% for external in job_data.tbl_external %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ external.c_external_link }}" target="_blank">{{ external.c_external_link | truncate(150, True, ' ...') }}</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% set mail_findings = (job_data.tbl_finding or []) | selectattr('c_finding_kind', 'equalto', 'mail') | list %}
+        {% set mail_addresses = mail_findings | map(attribute='c_finding_value') | unique | list %}
+        {# map file path -> source|archive, so code findings show which one they came from #}
+        {% set code_types = {} %}
+        {% for c in (job_data.tbl_code or []) %}{% set _ = code_types.__setitem__(c.c_code_file, c.c_code_type) %}{% endfor %}
+        {% if mail_addresses %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEmail" aria-expanded="false" aria-controls="collapseEmail">
+                        <code>Emails</code>&nbsp;<span class="r-count">{{ mail_addresses|length }}</span>
+                    </button>
+                </h2>
+                <div id="collapseEmail" class="accordion-collapse collapse" data-bs-parent="#accordionResults">
+                    <div class="accordion-body-scrollable-md">
+                        {# one nested accordion per address; each collapsed, expand to see 'found in' #}
+                        <div class="accordion" id="accordionEmail">
+                            {% for address in mail_addresses %}
+                                {% set origins = mail_findings | selectattr('c_finding_value', 'equalto', address) | list %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEmail{{ loop.index }}" aria-expanded="false" aria-controls="collapseEmail{{ loop.index }}">
+                                            <code>{{ address }}</code>&nbsp;<span class="r-count">{{ origins|length }}</span>
+                                        </button>
+                                    </h2>
+                                    <div id="collapseEmail{{ loop.index }}" class="accordion-collapse collapse" data-bs-parent="#accordionEmail">
+                                        <div class="accordion-body datablock-break">
+                                            {% for o in origins %}
+                                                <div>
+                                                    {# display from the domain part; href keeps the full path #}
+                                                    {% set loc_display = o.c_finding_location.split('/code/source/')[-1].split('/code/archive/')[-1] %}
+                                                    {% if o.c_finding_source == 'code' %}
+                                                        {# code = value is in the file text; badge shows source|archive, viewer marks it #}
+                                                        <span class="badge text-bg-secondary me-1">{{ code_types.get(o.c_finding_location, 'code') }}</span>
+                                                        <a class="wordbreak" href="{{ url_for('routes.view', path=o.c_finding_location, q=address) }}" target="_blank">{{ loc_display }}</a>
+                                                    {% else %}
+                                                        {# exif/ocr = value isn't in the raw bytes, nothing to mark #}
+                                                        <span class="badge text-bg-secondary me-1">{{ o.c_finding_source }}</span>
+                                                        <span class="wordbreak">{{ loc_display }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if job_data.tbl_code %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCode" aria-expanded="false" aria-controls="collapseCode">
+                        <code>Code</code>&nbsp;<span class="r-count">{{ job_data.tbl_code|length }}</span>
+                    </button>
+                </h2>
+                <div id="collapseCode" class="accordion-collapse collapse" data-bs-parent="#accordionResults">
+                    <div class="accordion-body">
+                        {% set code_type_opts = job_data.tbl_code | map(attribute='c_code_type') | reject('none') | unique | sort %}
+                        {% set code_mime_opts = job_data.tbl_code | map(attribute='c_code_mime') | reject('none') | unique | sort %}
+                        <div id="listCode" class="r-list">
+                            <div class="r-toolbar">
+                                <input class="search r-search form-control" placeholder="filter url / file…" aria-label="Filter code files">
+                                <select id="codeFilterType" class="form-select r-filter" aria-label="Filter by type">
+                                    <option value="">type: all</option>
+                                    {% for t in code_type_opts %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+                                </select>
+                                <select id="codeFilterMime" class="form-select r-filter" aria-label="Filter by mime">
+                                    <option value="">mime: all</option>
+                                    {% for mt in code_mime_opts %}<option value="{{ mt }}">{{ mt }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            <div class="accordion-body-scrollable-lg table-responsive">
+                                <table class="table align-middle text-left m-0">
+                                    <thead>
+                                        <tr>
+                                            <th><button type="button" class="sort r-sort" data-sort="c_url"><code>url / file</code></button></th>
+                                            <th><button type="button" class="sort r-sort" data-sort="c_type"><code>type</code></button></th>
+                                            <th><button type="button" class="sort r-sort" data-sort="c_mime"><code>mime</code></button></th>
+                                            <th class="text-center" style="width:64px"><button type="button" class="sort r-sort r-sort-center" data-sort="c_exif"><code>exif</code></button></th>
+                                            <th class="text-center" style="width:64px"><button type="button" class="sort r-sort r-sort-center" data-sort="c_ocr"><code>ocr</code></button></th>
+                                            <th class="text-center" style="width:64px"><button type="button" class="sort r-sort r-sort-center" data-sort="c_gps"><code>gps</code></button></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="list">
+                                        {% for codefile in job_data.tbl_code %}
+                                            <tr>
+                                                <td>
+                                                    <a class="link-url c_url" href="https://{{ codefile.c_code_url }}" target="_blank">{{ codefile.c_code_url }}</a>
+                                                    {% set m = codefile.c_code_mime or '' %}
+                                                    {% set is_binary = 'image' in m or 'pdf' in m or 'video' in m or 'audio' in m or 'font' in m %}
+                                                    <a class="link-file c_file"
+                                                       href="{{ url_for('routes.data', filename=codefile.c_code_file) if is_binary else url_for('routes.view', path=codefile.c_code_file) }}"
+                                                       target="_blank">
+                                                        {{ codefile.c_code_file.split(codefile.c_code_url)[-1] }}
+                                                    </a>
+                                                </td>
+                                                <td><pre class="c_type m-0">{{ codefile.c_code_type }}</pre></td>
+                                                <td><pre class="c_mime m-0">{{ codefile.c_code_mime }}</pre></td>
+                                                <td class="text-center">
+                                                    {# hidden 0/1 marker: gives List.js a sortable value for this icon-only column #}
+                                                    <span class="c_exif d-none">{{ 1 if codefile.c_code_exif else 0 }}</span>
+                                                    {% if codefile.c_code_exif %}
+                                                        {% include "extra/modal/modalCodeExif.html" %}
+                                                        <button type="button" class="btn btn-xs btn-primary" data-bs-toggle="modal" data-bs-target="#modalCodeExif{{ codefile.id }}">
+                                                            EXIF
+                                                        </button>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="c_ocr d-none">{{ 1 if codefile.c_code_ocr else 0 }}</span>
+                                                    {% if codefile.c_code_ocr %}
+                                                        {% include "extra/modal/modalCodeOcr.html" %}
+                                                        <button type="button" class="btn btn-xs btn-primary" data-bs-toggle="modal" data-bs-target="#modalCodeOcr{{ codefile.id }}">
+                                                            OCR
+                                                        </button>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="c_gps d-none">{{ 1 if codefile.c_code_gps else 0 }}</span>
+                                                    {% if codefile.c_code_gps %}
+                                                        {% include "extra/modal/modalCodeGps.html" %}
+                                                        <button type="button" class="btn btn-xs btn-primary" data-bs-toggle="modal" data-bs-target="#modalCodeGps{{ codefile.id }}">
+                                                            GPS
+                                                        </button>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <nav class="r-pager" aria-label="Table pages">
+                                <button type="button" class="r-page-nav" data-nav="prev" aria-label="Previous page"><i class="bi bi-chevron-left"></i></button>
+                                <ul class="pagination r-pagination"></ul>
+                                <button type="button" class="r-page-nav" data-nav="next" aria-label="Next page"><i class="bi bi-chevron-right"></i></button>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+
+{% endif %}
+
+<script>
+    document.querySelectorAll('.accordion-collapse').forEach(function(collapse) {
+        collapse.addEventListener('shown.bs.collapse', function() {
+            collapse.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        });
+    });
+
+    // List.js — client-side search / sort / pagination on our own semantic
+    // tables (offline-safe; no injected markup, so result.css applies cleanly).
+    (function () {
+        if (typeof List === 'undefined') return;
+
+        // Prev/next arrows: List.js only renders page numbers, so page by hand.
+        var wirePager = function (list, rootId) {
+            var root = document.getElementById(rootId);
+            var pager = root && root.querySelector('.r-pager');
+            if (!pager) return;
+            var prev = pager.querySelector('[data-nav="prev"]');
+            var next = pager.querySelector('[data-nav="next"]');
+            var total = function () { return (list.matchingItems && list.matchingItems.length) || list.size(); };
+            prev.addEventListener('click', function () { if (list.i > 1) list.show(Math.max(1, list.i - list.page), list.page); });
+            next.addEventListener('click', function () { if (list.i - 1 + list.page < total()) list.show(list.i + list.page, list.page); });
+            var sync = function () {
+                prev.disabled = list.i <= 1;
+                next.disabled = list.i - 1 + list.page >= total();
+            };
+            list.on('updated', sync);
+            sync();
+        };
+
+        if (document.getElementById('listSubdomain')) {
+            var subList = new List('listSubdomain', {
+                valueNames: ['subdomain', 'ipv4'],
+                page: 50,
+                pagination: { innerWindow: 2, outerWindow: 1 }
+            });
+            wirePager(subList, 'listSubdomain');
+        }
+
+        if (document.getElementById('listCode')) {
+            var codeList = new List('listCode', {
+                valueNames: ['c_url', 'c_file', 'c_type', 'c_mime', 'c_exif', 'c_ocr', 'c_gps'],
+                page: 25,
+                pagination: { innerWindow: 2, outerWindow: 1 }
+            });
+            var selType = document.getElementById('codeFilterType');
+            var selMime = document.getElementById('codeFilterMime');
+            var applyFilters = function () {
+                var t = selType.value, m = selMime.value;
+                if (!t && !m) { codeList.filter(); return; }
+                codeList.filter(function (item) {
+                    var v = item.values();
+                    return (!t || v.c_type === t) && (!m || v.c_mime === m);
+                });
+            };
+            selType.addEventListener('change', applyFilters);
+            selMime.addEventListener('change', applyFilters);
+            wirePager(codeList, 'listCode');
+        }
+    })();
+</script>

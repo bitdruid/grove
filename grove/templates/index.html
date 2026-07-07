@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" title="" data-bs-theme="dark">
+
+    <head>{% include "base/head.html" %}</head>
+
+    <body>
+        {% include "base/navbar.html" %}
+        <!-- <header>
+        </header> -->
+        <main>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.type == "alert" %}
+                            {% include "extra/flash/alert.html" %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="d-flex justify-content-center mb-5 p-3">
+                <div class="rounded-5 app-surface p-2 {% if request.endpoint == 'routes.jobs' %}{% if job_list %}page-narrow{% else %}content-box{% endif %}{% elif request.endpoint == 'routes.results' and not job_data %}content-box{% else %}page-max{% endif %}">
+
+                {% if request.endpoint == "routes.settings" %}
+                    {% include "modules/settings.html" %}
+                {% elif request.endpoint == "routes.jobs" %}
+                    {% include "modules/jobs.html" %}
+                {% elif request.endpoint == "routes.search" %}
+                    {% include "modules/search.html" %}
+                {% elif request.endpoint == "routes.view" %}
+                    {% include "modules/view.html" %}
+                {% elif request.endpoint == "routes.results" %}
+                    {% include "modules/result.html" %}
+                {% else %}
+                    {% include "modules/task.html" %}
+                {% endif %}
+
+                </div>
+            </div>
+        </main>
+        <footer class="bg-dark border-top" data-bs-theme="dark">
+            {% include "base/footer.html" %}
+        </footer>
+    </body>
+
+    {% include "extra/confirm_modal.html" %}
+
+</html>
+
+<script>
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+</script>

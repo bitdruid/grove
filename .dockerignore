@@ -1,0 +1,45 @@
+# VCS
+.git
+.gitignore
+
+# Python caches / build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+
+# Virtualenvs
+.venv
+venv/
+env/
+ENV/
+
+# Runtime state — huge and recreated in the container; never belongs in the build context
+jobs/
+instance/
+indexdir/
+*.log
+.logs
+
+# Local config / secrets
+.env
+
+# Dev-only + docs (not copied by the dockerfile)
+dev/
+README.md
+LICENSE
+nginx.example.conf
+compose.yml
+todo.md
+lock_new_requirements.sh
+
+# Bundled OCR model dirs (large, fetched/used at runtime)
+latin_PP-OCRv5_mobile_rec/
+PP-OCRv5_mobile_det/
+PP-OCRv5_server_det/
+
+# custom
+dev/
+test/

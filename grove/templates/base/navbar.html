@@ -1,0 +1,143 @@
+<nav class="navbar navbar-expand bg-dark justify-content-center" data-bs-theme="dark">
+    <div class="container-fluid">
+        <a class="navbar-brand d-inline-flex align-items-center gap-2" href="{{ url_for('routes.index') }}">
+            <i class="bi bi-house-fill" style="font-size: 1.2rem;"></i>
+            Grove
+        </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{{ url_for('routes.index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{{ url_for('routes.jobs') }}">Jobs
+                            {% if indexdata.job_counting > 0 %}
+                                <span class="r-count r-count-accent ms-1">{{ indexdata.job_counting }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{{ url_for('routes.search') }}">Search</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{{ url_for('routes.settings') }}">Settings</a>
+                    </li>
+                    <li class="nav-item">
+                        <!-- <div class="dropdown">
+                        <button class="btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="/">home</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/jobs">jobs</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="/settings">settings</a>
+                            </li>
+                        </ul>
+                    </div> -->
+                    </li>
+
+                </ul>
+
+                {% set disk_title = 'Total ' ~ indexdata.disk_space.total ~ ' · Used ' ~ indexdata.disk_space.used ~ ' · Free ' ~ indexdata.disk_space.free ~ ' GiB' %}
+                {% set avail_pct = indexdata.disk_space.free / indexdata.disk_space.total * 100 %}
+                <ul class="navbar-nav ms-auto align-items-center flex-nowrap">
+                    <li class="nav-item text-nowrap d-flex align-items-center {{ 'text-danger' if avail_pct < 10 else ('text-warning' if avail_pct < 25 else 'text-white') }}"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ disk_title }}">
+                        {{ indexdata.disk_space.free }} GB free <i class="bi bi-hdd-fill ms-2" style="font-size: 1.2rem;"></i>
+                    </li>
+                </ul>
+
+                <ul class="navbar-nav ms-2 gap-2 align-items-center">
+                    <li class="nav-item dropdown">
+                        <button id="accentToggle" type="button"
+                                class="btn btn-link p-1 border-0 shadow-none text-body-emphasis text-decoration-none"
+                                data-bs-toggle="dropdown" aria-expanded="false"
+                                title="Accent color" aria-label="Accent color">
+                            <i class="bi bi-palette-fill" style="font-size: 1.2rem;"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="accent-swatch" data-accent="" title="Default" style="--sw:#d63384;"></button>
+                                <button type="button" class="accent-swatch" data-accent="#539bf5" title="Blue" style="--sw:#539bf5;"></button>
+                                <button type="button" class="accent-swatch" data-accent="#3fb950" title="Green" style="--sw:#3fb950;"></button>
+                                <button type="button" class="accent-swatch" data-accent="#d29922" title="Amber" style="--sw:#d29922;"></button>
+                                <button type="button" class="accent-swatch" data-accent="#a371f7" title="Purple" style="--sw:#a371f7;"></button>
+                                <label class="accent-swatch accent-custom" title="Custom color">
+                                    <input id="accentCustom" type="color" value="#d63384" class="visually-hidden">
+                                </label>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <button id="themeToggle" type="button"
+                                class="btn btn-link p-1 border-0 shadow-none text-body-emphasis text-decoration-none"
+                                title="Toggle light / dark theme" aria-label="Toggle color theme">
+                            <i class="bi bi-moon-stars-fill" style="font-size: 1.2rem;"></i>
+                        </button>
+                    </li>
+                </ul>
+
+
+                <!-- <div class="text-center">Disk Space:</div> -->
+                <!-- <div class="btn btn-outline-info rounded-5 disabled">Total: {{ indexdata.disk_space.total }} GiB</div>
+                    <div class="btn btn-outline-info rounded-5 disabled">Used: {{ indexdata.disk_space.used }} GiB</div>
+                    <div class="btn btn-outline-info rounded-5 disabled">Free: {{ indexdata.disk_space.free }} GiB</div> -->
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    document.querySelectorAll(".nav-link").forEach((link) => {
+        if (link.href === window.location.href) {
+            link.classList.add("active");
+            link.setAttribute("aria-current", "page");
+        }
+    });
+
+    // light / dark theme toggle (persisted in localStorage; applied early in <head>)
+    (function () {
+        const btn = document.getElementById("themeToggle");
+        if (!btn) return;
+        const icon = btn.querySelector("i");
+        const sync = () => {
+            const dark = document.documentElement.getAttribute("data-bs-theme") !== "light";
+            icon.className = dark ? "bi bi-moon-stars-fill" : "bi bi-sun-fill";
+        };
+        sync();
+        btn.addEventListener("click", () => {
+            const next = document.documentElement.getAttribute("data-bs-theme") === "light" ? "dark" : "light";
+            document.documentElement.setAttribute("data-bs-theme", next);
+            try { localStorage.setItem("theme", next); } catch (e) {}
+            sync();
+        });
+    })();
+
+    // accent color picker (persisted; applied early in <head>). Empty value
+    // clears the override, restoring the per-theme default pink.
+    (function () {
+        const apply = (val) => {
+            if (val) document.documentElement.style.setProperty("--app-accent", val);
+            else document.documentElement.style.removeProperty("--app-accent");
+        };
+        const store = (val) => {
+            try { val ? localStorage.setItem("accent", val) : localStorage.removeItem("accent"); } catch (e) {}
+        };
+        document.querySelectorAll(".accent-swatch[data-accent]").forEach((el) => {
+            el.addEventListener("click", () => {
+                const val = el.getAttribute("data-accent");
+                apply(val);
+                store(val);
+            });
+        });
+        const custom = document.getElementById("accentCustom");
+        if (custom) {
+            custom.addEventListener("input", () => { apply(custom.value); store(custom.value); });
+        }
+    })();
+</script>

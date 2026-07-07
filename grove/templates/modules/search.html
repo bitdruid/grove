@@ -1,0 +1,58 @@
+<div class="mb-4">
+    <h3 class="mb-3">Search files (across all jobs)</h3>
+    <form method="get" action="{{ url_for('routes.search') }}" class="d-flex" role="search">
+        <input type="search" name="q" class="form-control me-2" placeholder="Search inside all job files…"
+               value="{{ search_query | default('', true) }}" autofocus aria-label="Search">
+        <button class="btn btn-primary d-inline-flex align-items-center gap-1" type="submit"><i class="bi bi-search"></i> Search</button>
+    </form>
+    <div class="form-text mt-2">
+        Matches whole words (stemmed — <code>apple</code> also finds <code>apples</code>).
+        Partial: <code>*apfel*</code> &middot; phrase: <code>"two words"</code> &middot;
+        combine with <code>AND</code> / <code>OR</code> / <code>NOT</code>.
+        Several words require <em>all</em> by default.
+    </div>
+</div>
+
+{% if search_query %}
+    {% if search_results %}
+        <p class="text-secondary">{{ search_results | length }} file(s) matched
+            {% if search_results | length >= 100 %}(showing first 100){% endif %}
+        </p>
+        <div class="table-responsive">
+            <table class="table align-top table-borderless text-start m-0">
+                <thead>
+                    <tr>
+                        <th class="col-3"><code>job / file</code></th>
+                        <th class="col-9"><code>match</code></th>
+                    </tr>
+                </thead>
+                <tbody class="datablock-break">
+                    {% for hit in search_results %}
+                        {% set rel = hit.path[5:] if hit.path.startswith('jobs/') else hit.path %}
+                        <tr>
+                            <td>
+                                <a class="link-url" href="{{ url_for('routes.results', id=hit.job) }}">{{ hit.job }}</a>
+                                <br>
+                                <a class="link-file" href="{{ url_for('routes.view', path=hit.path, q=search_query) }}" target="_blank" title="{{ rel }}">
+                                    {{ rel.split('/') | last }}
+                                </a>
+                            </td>
+                            <td>
+                                <pre class="m-0 search-snippet">{{ hit.snippet | safe }}</pre>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center">
+            <h3 class="m-0"><code>no matches for {{ search_query }}</code></h3>
+        </div>
+    {% endif %}
+{% endif %}
+
+<style>
+    .search-snippet { white-space: pre-wrap; word-break: break-word; }
+    .search-snippet mark { padding: 0 .15em; }
+</style>

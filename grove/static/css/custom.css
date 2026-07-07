@@ -1,0 +1,465 @@
+/* Typography — self-hosted Inter (offline-safe, works in the export) */
+@font-face {
+    font-family: "Inter";
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url("../fonts/inter-latin-wght-normal.woff2") format("woff2");
+}
+
+body {
+    /* App-shell: pin body to the viewport so only <main> scrolls — the navbar and
+       footer stay fixed and a scrollbar never runs over them on any page. */
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    letter-spacing: -0.006em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.navbar-brand {
+    letter-spacing: -0.02em;
+    font-weight: 600;
+}
+
+/* Brand accent — single global default so the navbar picker's inline override
+   on <html> cascades everywhere, including the hard-dark navbar. */
+:root {
+    --app-accent: #d63384;
+    --status-stuck: #b3801f;
+    --status-error: #b3402f;
+}
+
+/* Two-tone theming: neutral backdrop + lighter surfaces (--app-*) for cards */
+[data-bs-theme="dark"] {
+    --app-surface: #262c33;
+    /* cards (GitHub surface) */
+    --app-border: #2d3a49;
+    --bs-body-bg: #0d1117;
+    /* GitHub canvas backdrop */
+    --bs-dark-rgb: 1, 4, 9;
+    /* .bg-dark = navbar/footer (GitHub header #010409) */
+    --bs-body-color: #cdd5dd;
+    --bs-emphasis-color: #f0f3f6;
+    --bs-secondary-color: #94a0ad;
+    --bs-secondary-bg: #262d35;
+    --bs-tertiary-bg: #20262d;
+    --bs-border-color: var(--app-border);
+
+    /* restrained radius (kills the pill look) */
+    --bs-border-radius: .375rem;
+    --bs-border-radius-lg: .5rem;
+    --bs-border-radius-sm: .25rem;
+    --bs-border-radius-xl: .5rem;
+    --bs-border-radius-pill: .375rem;
+
+    /* <code> labels follow the global --app-accent (defined on :root) */
+    --bs-code-color: var(--app-accent);
+
+    /* desaturated accent + calmer links */
+    --bs-primary: #316dca;
+    --bs-primary-rgb: 49, 109, 202;
+    --bs-link-color: #539bf5;
+    --bs-link-color-rgb: 83, 155, 245;
+    --bs-link-hover-color: #6cb6ff;
+}
+
+[data-bs-theme="light"] {
+    --app-surface: #f0f4fa;
+    /* off-white cards */
+    --app-border: #cfd6de;
+    --bs-body-bg: #e5e9ef;
+    /* soft gray backdrop */
+    --bs-border-color: var(--app-border);
+
+    --bs-border-radius: .375rem;
+    --bs-border-radius-lg: .5rem;
+    --bs-border-radius-sm: .25rem;
+    --bs-border-radius-xl: .5rem;
+    --bs-border-radius-pill: .375rem;
+
+    /* <code> labels follow the global --app-accent (defined on :root) */
+    --bs-code-color: var(--app-accent);
+
+    --bs-primary: #2f6bc0;
+    --bs-primary-rgb: 47, 107, 192;
+    --bs-link-color: #2f6bc0;
+    --bs-link-color-rgb: 47, 107, 192;
+    --bs-link-hover-color: #24548f;
+}
+
+/* Neutralize every hard-coded .rounded-5 pill without touching templates */
+.rounded-5 {
+    border-radius: var(--bs-border-radius) !important;
+}
+
+/* Shrink the default button size app-wide (stock Bootstrap runs large for this UI) */
+.btn {
+    --bs-btn-padding-y: 0.25rem;
+    --bs-btn-padding-x: 0.6rem;
+    --bs-btn-font-size: 0.8rem;
+}
+
+/* Center button glyphs against the button's line box (icon-only buttons) */
+.btn .bi {
+    vertical-align: middle;
+}
+
+/* Extra-small button (below btn-sm) — used for dense table actions like EXIF/OCR */
+.btn-xs {
+    --bs-btn-padding-y: 0.1rem;
+    --bs-btn-padding-x: 0.4rem;
+    --bs-btn-font-size: 0.7rem;
+}
+
+/* Tighten table rows app-wide (stock 0.5rem vertical cell padding is tall for this UI) */
+.table {
+    --bs-table-cell-padding-y: 0.2rem;
+}
+
+/* Primary buttons: muted slate-blue instead of stock #0d6efd */
+.btn-primary {
+    --bs-btn-bg: #316dca;
+    --bs-btn-border-color: #316dca;
+    --bs-btn-hover-bg: #2a5aa8;
+    --bs-btn-hover-border-color: #2a5aa8;
+    --bs-btn-active-bg: #274f92;
+    --bs-btn-active-border-color: #274f92;
+    --bs-btn-disabled-bg: #316dca;
+    --bs-btn-disabled-border-color: #316dca;
+    --bs-btn-focus-shadow-rgb: 49, 109, 202;
+}
+
+/* Tone down the loud cyan "info" accent (footer About, disk-space pills) */
+.btn-info {
+    --bs-btn-bg: #2b3d52;
+    --bs-btn-border-color: #3a4d63;
+    --bs-btn-color: #cbd5e1;
+    --bs-btn-hover-bg: #364a61;
+    --bs-btn-hover-border-color: #46596f;
+    --bs-btn-hover-color: #e6ebf0;
+}
+
+/* Theme-adaptive content surface (cards) — lighter than the page backdrop */
+.app-surface {
+    background-color: var(--app-surface) !important;
+}
+
+/* Hairline separators for the app chrome */
+.navbar {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+/* Active nav link uses the brand accent, same as the <code> labels */
+.navbar-nav .nav-link.active {
+    color: var(--app-accent);
+    font-weight: 600;
+}
+
+/* Result/search links: url/job in the blue link tone, file in the brand pink */
+.link-url {
+    color: var(--bs-link-color);
+}
+
+.link-file {
+    color: var(--app-accent);
+}
+
+.link-url:hover,
+.link-file:hover {
+    filter: brightness(1.12);
+}
+
+/* Task-form section headings (Code Download Settings, Screenshot, …) share the accent */
+#accordionSettings .card-title {
+    color: var(--app-accent);
+}
+
+/* One unified notification: bg/border/text all derived from the accent, so it
+   tilts with the picker. color-mix keeps the tints readable in both themes. */
+.alert-app {
+    --bs-alert-bg: color-mix(in srgb, var(--app-accent) 14%, var(--bs-body-bg));
+    --bs-alert-border-color: color-mix(in srgb, var(--app-accent) 45%, transparent);
+    --bs-alert-color: color-mix(in srgb, var(--app-accent) 82%, var(--bs-body-color));
+}
+
+/* Shared count pill — section counts on the results page and the navbar Jobs
+   badge. Subtle: secondary text on the secondary surface with a hairline edge. */
+.r-count {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.15rem 0.4rem;
+    border-radius: 1rem;
+    color: var(--bs-secondary-color);
+    background: var(--bs-secondary-bg);
+    border: 1px solid var(--app-border);
+}
+
+/* Accent variant — tilts with the picker (navbar Jobs counter). */
+.r-count-accent {
+    color: var(--app-accent);
+    background: color-mix(in srgb, var(--app-accent) 15%, transparent);
+    border-color: color-mix(in srgb, var(--app-accent) 45%, transparent);
+}
+
+/* Accent picker swatches (navbar dropdown) */
+.accent-swatch {
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--app-border);
+    background: var(--sw);
+    cursor: pointer;
+    transition: transform .1s ease;
+}
+
+.accent-swatch:hover {
+    transform: scale(1.15);
+}
+
+.accent-custom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: conic-gradient(red, orange, yellow, lime, aqua, blue, magenta, red);
+}
+
+/* Give the inset content card an edge so it reads against the backdrop */
+main .app-surface {
+    border: 1px solid var(--app-border);
+}
+
+/* Cards & accordions: point bg at --app-surface for one coherent surface */
+.accordion,
+.card {
+    --bs-accordion-bg: var(--app-surface);
+    --bs-accordion-active-bg: var(--app-surface);
+    --bs-accordion-active-color: var(--bs-emphasis-color);
+    --bs-accordion-border-color: var(--app-border);
+    --bs-accordion-btn-focus-box-shadow: none;
+    --bs-card-bg: var(--app-surface);
+    --bs-card-border-color: var(--app-border);
+}
+
+/* Transparent tables inherit the container surface instead of the backdrop */
+.table {
+    --bs-table-bg: transparent;
+}
+
+/* Separator between header and body — only when the row is expanded.
+   Transparent border to prevent clear black / white on expansion. */
+.accordion-button {
+    border-bottom: 1px solid transparent;
+}
+
+.accordion-button:not(.collapsed) {
+    border-bottom-color: var(--app-border);
+}
+
+/* Result-specific styling (headers, key/value panels, tables) lives in
+   result.css, scoped under #accordionResults. */
+
+/* Progress bars: framed track so the full extent reads even when unfilled;
+   muted, desaturated fills to match the enterprise palette. */
+.progress {
+    background-color: var(--bs-secondary-bg);
+    border: 1px solid var(--app-border);
+}
+
+/* Job progress bar: state colors (in-progress blue via native text-bg-primary,
+   done green, stuck amber, error red) */
+.progress-bar.text-bg-success {
+    background-color: #2f8a5b !important;
+}
+
+.progress-bar.text-bg-warning {
+    background-color: #b3801f !important;
+}
+
+.progress-bar.text-bg-danger {
+    background-color: #b3402f !important;
+}
+
+/* Percentages hidden until the bar is hovered (calmer, thinner bars).
+   !important overrides the color:#fff that Bootstrap's text-bg-* utilities set. */
+.progress-bar {
+    color: transparent !important;
+    transition: color .12s ease;
+}
+
+.progress:hover .progress-bar {
+    color: #fff !important;
+}
+
+/* Status icons: neutral (theme black/white) for calm states, colored for stuck/error */
+.status-neutral {
+    color: var(--bs-emphasis-color) !important;
+}
+
+.status-stuck {
+    color: var(--status-stuck) !important;
+}
+
+.status-error {
+    color: var(--status-error) !important;
+}
+
+/* Tighter accordion rows (default btn padding drove the height, not icons) */
+.accordion {
+    --bs-accordion-btn-padding-y: 0.7rem;
+    --bs-accordion-btn-padding-x: 1rem;
+    --bs-accordion-btn-icon-width: 1rem;
+    --bs-accordion-body-padding-y: 0.75rem;
+    --bs-accordion-body-padding-x: 1rem;
+}
+
+header {}
+
+main {
+    flex: 1;
+    min-height: 0;              /* let the flex child shrink so its overflow scrolls */
+    overflow-y: auto;          /* the one scroll container, between navbar and footer */
+    scrollbar-gutter: stable;  /* reserve the track so pages don't shift when it appears */
+}
+
+footer {
+    text-align: center;
+    font-size: 0.8rem;
+    padding-bottom: 1em;
+    color: #666;
+}
+
+button {
+    white-space: nowrap;
+}
+
+.w-15 {
+    width: 15% !important;
+}
+
+.w-10 {
+    width: 10% !important;
+}
+
+.w-5 {
+    width: 5% !important;
+}
+
+/* tables horizontal scrollable and consolas standard font */
+.datablock-scroll,
+.datablock-break {
+    font-family: Consolas, monospace;
+    font-size: 13px;
+}
+
+.datablock-scroll {
+    white-space: nowrap;
+    overflow-x: scroll;
+}
+
+.datablock-break {
+    white-space: nowrap;
+    word-break: break-word;
+}
+
+/* accordion bodies and containers with limited opening and scrollable */
+
+.accordion-body-scrollable-lg,
+.container-scrollable-lg {
+    max-height: 60rem;
+    overflow-y: scroll;
+}
+
+.accordion-body-scrollable-md,
+.container-scrollable-md {
+    max-height: 40rem;
+    overflow-y: scroll;
+}
+
+.accordion-body-scrollable-sm,
+.container-scrollable-sm {
+    max-height: 20rem;
+    overflow-y: scroll;
+}
+
+/* Viewport-fit variant: caps to the visible area so the page itself never gets a
+   scrollbar. overflow auto + scrollbar-gutter shows the bar only when needed and
+   reserves its track, so content doesn't shift when it appears. */
+.accordion-body-scrollable-fit,
+.container-scrollable-fit {
+    max-height: calc(100vh - 18rem);
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+}
+
+.content-box {
+    width: fit-content;
+    max-width: 100%;
+}
+
+.page-max {
+    width: 100%;
+    max-width: 84rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.page-narrow {
+    width: 100%;
+    max-width: 54rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* force text to break words */
+
+.wordbreak {
+    word-break: break-word;
+}
+
+/* class to activate the confirmation modal */
+.btn-confirm-modal {}
+
+[data-confirm-title] {}
+
+/* text to be shown in modal title */
+[data-confirm-action] {}
+
+/* modal form action */
+[data-confirm-name] {}
+
+/* name catched by the confirm-modal to submit the data-confirm-value */
+[data-confirm-value] {}
+
+/* value catched by the confirm-modal to be submitted the data-confirm-name */
+
+/* class to activate a toast message */
+.toast-spawner [data-toast-text] {}
+
+/* text to be shown in the toast */
+
+/* effects */
+
+.alert-slideup {
+    transition: all 0.5s ease;
+    height: 0;
+    opacity: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}

@@ -1,0 +1,44 @@
+<div id="modalConfirm" class="modal fade modal-sm" tabindex="-1" aria-labelledby="modalConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalConfirmLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-danger d-inline-flex align-items-center gap-1" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Dismiss</button>
+
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <form action="{{ url_for('api.api_settings') }}" method="post" id="modalConfirmAction">
+                    <input id="modalConfirmPost" type="hidden" />
+                    <button type="submit" class="btn btn-success d-inline-flex align-items-center gap-1"><i class="bi bi-check-lg"></i> Confirm</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll(".btn-confirm-modal").forEach((button) => {
+        button.addEventListener("click", function() {
+            const confirmTitle = this.dataset.confirmTitle;
+            const confirmAction = this.dataset.confirmAction;
+            const confirmName = this.dataset.confirmName;
+            const confirmValue = this.dataset.confirmValue;
+
+            document.getElementById("modalConfirmLabel").textContent = confirmTitle;
+
+            document.getElementById("modalConfirmAction").action = confirmAction;
+            document.getElementById("modalConfirmPost").name = confirmName;
+            document.getElementById("modalConfirmPost").value = confirmValue;
+
+            // dismiss this button's tooltip so it doesn't linger over the modal
+            const tip = bootstrap.Tooltip.getInstance(this);
+            if (tip) tip.hide();
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById("modalConfirm"));
+            modal.show();
+        });
+    });
+</script>

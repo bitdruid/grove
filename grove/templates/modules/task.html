@@ -1,0 +1,230 @@
+<form action="{{ url_for('api.api_task') }}" method="post">
+    <div class="d-flex">
+        <input type="text" name="task_target" class="form-control me-2" placeholder="IP or URL">
+        <button class="btn btn-primary text-nowrap d-inline-flex align-items-center gap-1" type="submit"><i class="bi bi-play-fill"></i> Run</button>
+    </div>
+    <br>
+    <div class="accordion" id="accordionSettings">
+
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDatabase">
+                    Additional Task Parameter
+                </button>
+            </h2>
+
+            <div id="collapseDatabase" class="accordion-collapse collapse" data-bs-parent="#accordionSettings">
+                <div class="accordion-body">
+
+                    <!-- cards for additional settings -->
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+
+                        <!-- download card -->
+                        <div class="col">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Code Download Settings</h5>
+                                    <p class="card-text">
+                                        Depending on the amount of snapshots, wayback-machine can have a massive time impact.
+                                        <table class="table">
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="task_switch_source" checked>
+                                                            <label class="form-check-label" for="task_switch_source">Source Code</label>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="task_switch_archive">
+                                                            <label class="form-check-label" for="task_switch_archive">Wayback Machine</label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="task_source" value="index" id="task_radio_source_index" checked>
+                                                            <label class="form-check-label" for="task_radio_source_index" data-bs-toggle="tooltip" data-bs-placement="top" title="Only the index-page">
+                                                                index
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="task_source" value="full" id="task_radio_source_full">
+                                                            <label class="form-check-label" for="task_radio_source_full" data-bs-toggle="tooltip" data-bs-placement="top" title="Full page to a link-layer depth of 10">
+                                                                full
+                                                            </label>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="task_archive" value="latest" id="task_radio_archive_latest" checked>
+                                                            <label class="form-check-label" for="task_radio_archive_latest" data-bs-toggle="tooltip" data-bs-placement="top" title="Latest version of all available files">
+                                                                latest
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="task_archive" value="2y" id="task_radio_archive_2y">
+                                                            <label class="form-check-label" for="task_radio_archive_2y" data-bs-toggle="tooltip" data-bs-placement="top" title="Snapshots of the last 2 years">
+                                                                2-year
+                                                            </label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- screenshot card -->
+                        <div class="col">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Screenshot</h5>
+                                    <p class="card-text">
+                                        Depending on the amount of extracted hyperlinks screenshots can have a massive time impact.
+                                        <table class="table">
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" role="switch" id="task_switch_screenshot" checked>
+                                                            <label class="form-check-label" for="task_switch_screenshot">off / on</label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="task_screenshot" value="index" id="task_radio_screenshot_index" checked>
+                                                            <label class="form-check-label" for="task_screenshot_index" data-bs-toggle="tooltip" data-bs-placement="top" title="Only the index-page">
+                                                                index
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="task_screenshot" value="full" id="task_radio_screenshot_full">
+                                                            <label class="form-check-label" for="task_screenshot_full" data-bs-toggle="tooltip" data-bs-placement="top" title="All available links">
+                                                                full
+                                                            </label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- subdomain card -->
+                        <div class="col">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Subdomain Enumeration</h5>
+                                    <p class="card-text">
+                                        Enumerates subdomains via Sublist3r (search engines, certificate transparency, passive DNS) and resolves each to its IPv4. Depending on the domain this can take a while.
+                                        <table class="table">
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" role="switch" name="task_subdomain" value="on" id="task_switch_subdomain">
+                                                            <label class="form-check-label" for="task_switch_subdomain">off / on</label>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- hyperlink card -->
+                        <div class="col">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        Additional Hyperlinks
+                                        <button class="btn btn-primary btn-sm rounded-circle d-inline-flex align-items-center justify-content-center p-0" id="task_add_hyperlink" type="button" style="width:1.5rem;height:1.5rem" title="Add link" aria-label="Add link"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+                                    </h5>
+                                    <p class="card-text">
+                                        <div class="input-group mb-3" id="task_hyperlink_1">
+                                            <input type="text" class="form-control" placeholder="Hyperlink" name="task_hyperlink[]">
+                                        </div>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+                const hyperlinkAdd = document.getElementById("task_add_hyperlink");
+                const firstHyperlink = document.getElementById("task_hyperlink_1").parentNode;
+                let hyperlinkCount = 1;
+
+                // inline X (symmetric svg, centers cleanly — matches the round add button)
+                const removeSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>`;
+
+                hyperlinkAdd.addEventListener("click", function() {
+                    hyperlinkCount++;
+
+                    // new row: X-remove button in the left slot + the url input
+                    const group = document.createElement("div");
+                    group.className = "input-group mb-3";
+                    group.id = `task_hyperlink_${hyperlinkCount}`;
+                    group.innerHTML =
+                        `<button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center justify-content-center px-2" title="Remove link" aria-label="Remove link">${removeSvg}</button>` +
+                        `<input type="text" class="form-control" placeholder="Hyperlink" name="task_hyperlink[]">`;
+
+                    group.querySelector("button").addEventListener("click", () => group.remove());
+                    firstHyperlink.appendChild(group);
+                });
+
+                // handle switches + radios
+                const controls = [{
+                    switchId: "task_switch_source",
+                    radioName: "task_source"
+                }, {
+                    switchId: "task_switch_archive",
+                    radioName: "task_archive"
+                }, {
+                    switchId: "task_switch_screenshot",
+                    radioName: "task_screenshot"
+                }];
+
+                controls.forEach(({
+                    switchId,
+                    radioName
+                }) => {
+                    const switchEl = document.getElementById(switchId);
+                    const radios = document.querySelectorAll(`input[name="${radioName}"]`);
+
+                    function updateRadios() {
+                        radios.forEach(r => r.disabled = !switchEl.checked);
+                    }
+
+                    updateRadios();
+                    switchEl.addEventListener("change", updateRadios);
+                });
+            });
+</script>

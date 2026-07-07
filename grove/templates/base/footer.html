@@ -1,0 +1,47 @@
+<hr style="margin-bottom: 0.5em; margin-top: 0.5em;" />
+<div>
+    <a href="{{ indexdata.footer_url }}" target="_blank" style="text-decoration: none; color: inherit">GitHub</a>
+    | Author: {{ indexdata.footer_author }} | Version: {{ indexdata.footer_version }}
+</div>
+<button type="button" class="btn btn-info btn-sm border border-3 rounded-5 mt-1" data-bs-toggle="modal" data-bs-target="#modalAbout">
+    About
+</button>
+
+<div class="modal fade" id="modalAbout" tabindex="-1" aria-labelledby="modalAboutLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" aria-labelledby="modalAboutLabel">About</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <h4>Sources</h4>
+
+                <table class="table table-striped table-hover table-borderless text-start">
+                    <thead>
+                        <th>use</th>
+                        <th>author</th>
+                        <th>origin</th>
+                    </thead>
+                    <tbody>
+                        {% for source in indexdata.footer_sources %}
+                            <tr>
+                                <td>{{ source.use }}</td>
+                                <td>{{ source.author }}</td>
+                                <td>
+                                    <a href="{{ source.origin }}" target="_blank">{{ source.name }}</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

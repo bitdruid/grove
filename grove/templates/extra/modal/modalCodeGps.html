@@ -1,0 +1,27 @@
+
+<div class="modal fade" id="modalCodeGps{{ codefile.id }}" tabindex="-1" aria-labelledby="modalCodeGpsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" aria-labelledby="modalCodeGpsLabel">GPS</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-start">
+                <table class="table table-sm table-striped align-middle mb-0">
+                    <tbody>
+                        {% for line in (codefile.c_code_gps or '').split('\n') if line.strip() %}
+                            {% set parts = line.split(': ', 1) %}
+                            <tr>
+                                <td class="text-nowrap"><b>{{ parts[0] }}</b></td>
+                                <td>{{ parts[1] if parts|length > 1 else '' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
